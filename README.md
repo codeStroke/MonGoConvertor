@@ -1,3 +1,8 @@
 # MonGoConvertor
 Convert your mongo shell queries to mgo queries.
-dsds
+
+## Install
+
+```
+$ go get github.com/codeStroke/MonGoConvertor
+```
