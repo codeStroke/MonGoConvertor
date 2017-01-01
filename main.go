@@ -5,6 +5,5 @@ import (
 )
 
 func main() {
-	log.Println("MonGo Coverter")
-
+	log.Println("MonGo Coverter : Convert your mongo queries to Golang queries...")
 }
