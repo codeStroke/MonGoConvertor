@@ -2,8 +2,14 @@ package main
 
 import (
 	"log"
+	"net/http"
 )
 
 func main() {
-	log.Println("MonGo Coverter : Convert your mongo queries to Golang queries...")
+	log.Println("Listening on port 3000")
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "index.html")
+	})
+	http.ListenAndServe(":3000", nil)
+
 }
