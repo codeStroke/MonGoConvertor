@@ -172,6 +172,6 @@ func main() {
 	}
 	http.HandleFunc("/", Convert)
 	//http.HandleFunc("/tt", handler)
-	log.Println("Listening....")
+	log.Println("Listening....on port: " + port)
 	http.ListenAndServe(":"+port, nil)
 }
