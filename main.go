@@ -1,36 +1,49 @@
 package main
 
 import (
+	_ "expvar"
+	"fmt"
+	"log"
 	"net/http"
 	"os"
-	_ "expvar"
-	"log"
-	"fmt"
 	"strings"
+	"html/template"
 )
 
+var Port string
+func init() {
+	Port = os.Getenv("PORT")
+	if Port == "" {
+		Port = "9876"
+	}
+}
+
+type HTMLPage struct {
+	Title string
+	URL string
+}
+
 //calculating collection name, queryType, remaining string
-func calculateCollectionName (dbQuery string) (string, string,string){
+func calculateCollectionName(dbQuery string) (string, string, string) {
 
 	var queryType, rem string
-	fmt.Println("dbQuery > ",dbQuery)
-	a := strings.Split(dbQuery,".")
-	fmt.Println("a : > ",a)
-	a2:= strings.Split(a[1],".")
-	fmt.Println("a : > ",a2)
-	a3 := strings.Split(a[2],"(")
-	fmt.Println("a : > ",a3)
-	a4 := strings.Split(a3[1],"{")
-	fmt.Println("a : > ",a4)
-	a5 := strings.Split(a4[0],"}")
-	fmt.Println("a : > ",a5)
+	fmt.Println("dbQuery > ", dbQuery)
+	a := strings.Split(dbQuery, ".")
+	fmt.Println("a : > ", a)
+	a2 := strings.Split(a[1], ".")
+	fmt.Println("a : > ", a2)
+	a3 := strings.Split(a[2], "(")
+	fmt.Println("a : > ", a3)
+	a4 := strings.Split(a3[1], "{")
+	fmt.Println("a : > ", a4)
+	a5 := strings.Split(a4[0], "}")
+	fmt.Println("a : > ", a5)
 	//getting collection Name
 	queryType = strings.Title(a3[0])
 
-
 	rem = a3[1]
 	//if rem contains array //append []int
-	if (strings.Contains(rem , "[")) {
+	if strings.Contains(rem, "[") {
 
 	}
 
@@ -38,7 +51,7 @@ func calculateCollectionName (dbQuery string) (string, string,string){
 	return a2[0], queryType, rem
 }
 
-func calculateMonGoQuery(dbName,dbQuery string) (string, error){
+func calculateMonGoQuery(dbName, dbQuery string) (string, error) {
 
 	//Possible Queries
 	//1. Inserting Documents
@@ -54,47 +67,52 @@ func calculateMonGoQuery(dbName,dbQuery string) (string, error){
 	//getting collectionName, queryType and remaining string to be appended in answer
 	collectionName, queryType, rem := calculateCollectionName(dbQuery)
 
-	outputString  := "session.DB(\""+dbName + "\").C(\"" + collectionName + "\")."+queryType + "("+rem
+	outputString := "session.DB(\"" + dbName + "\").C(\"" + collectionName + "\")." + queryType + "(" + rem
 
-	return outputString,nil
+	return outputString, nil
 
 	//2. Finding Documents
 	//3. Finding Documents using Operators
-	    //3.1 $gt / $gte || $lt / $lte - greater than / greater than equals , lesser than / lesser than equals
-	    //3.2 $exists - does an attribute exist or not
-	    //3.3 $regex - Perl-style pattern matching
-	    //3.4 $type - search by type of an element
+	//3.1 $gt / $gte || $lt / $lte - greater than / greater than equals , lesser than / lesser than equals
+	//3.2 $exists - does an attribute exist or not
+	//3.3 $regex - Perl-style pattern matching
+	//3.4 $type - search by type of an element
 
 	//4. Updating Documents
 	//5. Removing Documents
 	//6. Working with Indexes
 	//7. Pipeline Stages
-	    //7.1 $project
-	    //7.2 $match
-	    //7.3 $group
-	    //7.4 $sort
-	    //7.5 $skip
-	    //7.6 $limit
-	    //7.7 $unwind
+	//7.1 $project
+	//7.2 $match
+	//7.3 $group
+	//7.4 $sort
+	//7.5 $skip
+	//7.6 $limit
+	//7.7 $unwind
 	//8. Aggregation Expressions
-	    //8.1 $sum
-	    //8.2 $avg
-	    //8.3 $min / $max
-	    //8.4 $push
-	    //8.5 $addToSet
-	    //8.6 $first / $last
+	//8.1 $sum
+	//8.2 $avg
+	//8.3 $min / $max
+	//8.4 $push
+	//8.5 $addToSet
+	//8.6 $first / $last
 
 }
 
 func Convert(w http.ResponseWriter, r *http.Request) {
 
-	fmt.Println("inside convert ")
-	fmt.Println("r >", r.Method)
+	//fmt.Println("inside convert ")
+	//fmt.Println("r >", r.Method)
 
-	var dbName,dbQuery,generateButton string
+	var dbName, dbQuery, generateButton string
 
 	if r.Method == "GET" {
-		http.ServeFile(w, r, "index.html")
+		template :=  template.Must(template.ParseFiles("index.html"))
+		myvar := HTMLPage{Title:"Query Translater", URL: "https://obscure-oasis-23144.herokuapp.com/"}
+		e := template.ExecuteTemplate(w, "index.html", myvar)
+		if e != nil {
+			fmt.Println("ewewewewewe getting error", e.Error())
+		}
 
 	} else {
 
@@ -107,20 +125,17 @@ func Convert(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "dbName cannot be empty")
 			os.Exit(0)
 		}
-		fmt.Fprintln(w , "Entered dbName is  :", dbName)
+		fmt.Fprintln(w, "Entered dbName is  :", dbName)
 
 		dbQuery = r.FormValue("dbQuery")
-		fmt.Fprintln(w , "Entered query is  :", dbQuery)
+		fmt.Fprintln(w, "Entered query is  :", dbQuery)
 
-
-		ans,err := calculateMonGoQuery(dbName,dbQuery)
+		ans, err := calculateMonGoQuery(dbName, dbQuery)
 		if err != nil {
 			log.Println("calculateMonGoQuery Error", err.Error())
 		}
 
-		fmt.Fprint(w ,"outputString > "+ ans)
-
-
+		fmt.Fprint(w, "outputString > "+ans)
 
 		//POST : generate button action
 		generateButton = r.FormValue("generate")
@@ -128,12 +143,12 @@ func Convert(w http.ResponseWriter, r *http.Request) {
 		//check if button is pressed
 		if len(generateButton) != 0 {
 
-			ans,err := calculateMonGoQuery(dbName,dbQuery)
+			ans, err := calculateMonGoQuery(dbName, dbQuery)
 			if err != nil {
 				log.Println("calculateMonGoQuery Error", err.Error())
 			}
 
-			fmt.Fprint(w , ans)
+			fmt.Fprint(w, ans)
 		} else {
 			fmt.Println("generatebutton is not pressed!")
 			//fmt.lo(w , "generatebutton is not pressed!")
@@ -141,12 +156,10 @@ func Convert(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func handler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "index.html")
 
-	var dbName,dbQuery string
-
+	var dbName, dbQuery string
 
 	// Form submitted
 	r.ParseMultipartForm(32 << 20)
@@ -157,21 +170,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "dbName cannot be empty")
 		os.Exit(0)
 	}
-	fmt.Fprint(w , "Entered dbName is  :", dbName)
+	fmt.Fprint(w, "Entered dbName is  :", dbName)
 
 	dbQuery = r.FormValue("dbQuery")
-	fmt.Fprint(w , "Entered query is  :", dbQuery)
+	fmt.Fprint(w, "Entered query is  :", dbQuery)
 
 }
 
-
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "9876"
-	}
 	http.HandleFunc("/", Convert)
 	//http.HandleFunc("/tt", handler)
-	log.Println("Listening....on port: " + port)
-	http.ListenAndServe(":"+port, nil)
+	log.Println("Listening....on port: " + Port)
+	http.ListenAndServe(":"+Port, nil)
 }
