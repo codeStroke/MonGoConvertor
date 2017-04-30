@@ -108,7 +108,7 @@ func Convert(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
 		template :=  template.Must(template.ParseFiles("index.html"))
-		myvar := HTMLPage{Title:"Query Translater", URL: "https://obscure-oasis-23144.herokuapp.com/"}
+		myvar := HTMLPage{Title:"Query Translater", URL: "https://cryptic-ravine-58923.herokuapp.com/"}
 		e := template.ExecuteTemplate(w, "index.html", myvar)
 		if e != nil {
 			fmt.Println("ewewewewewe getting error", e.Error())

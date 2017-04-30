@@ -13,4 +13,4 @@ $ go get github.com/codeStroke/MonGoConvertor
 
 
 ## Play Arena
-Running on [Heroku](https://obscure-oasis-23144.herokuapp.com/)
+Running on [Heroku](https://cryptic-ravine-58923.herokuapp.com/)
